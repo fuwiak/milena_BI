@@ -16,9 +16,9 @@ scikit-learn==1.8.0
 lightgbm==4.6.0
 joblib==1.4.2
 
-# BI / Dashboard
-streamlit==1.35.0
-plotly==5.22.0
+# BI / Dashboard (версии совместимы с numpy 2.x / pandas 3.x)
+streamlit==1.56.0
+plotly==6.7.0
 
 # Загрузка raw xlsx (на случай fallback-режима)
 openpyxl==3.1.2
