@@ -1,0 +1,10 @@
+{
+  "n_contracts": 32274,
+  "n_borrowers": 32197,
+  "total_debt": 253490176.0,
+  "available_limit": 19515524.0,
+  "avg_pdn_current": 0.44270724058151245,
+  "avg_dpd": 18.21069591621739,
+  "default_rate": 0.14950114643366177,
+  "reserve_amount": 76911352.0
+}

@@ -1,0 +1,28 @@
+# =============================================================================
+# Production requirements для Streamlit-дашборда (Railway / Streamlit Cloud).
+# Дашборд читает pre-computed parquet-кэш (reports/dashboard_*.parquet), поэтому
+# тяжёлые библиотеки для обучения (XGBoost, SHAP, evidently) в runtime не нужны.
+# Для локальной разработки/пайплайна установите дополнительно requirements-dev.txt.
+# =============================================================================
+
+# Core data
+pandas==2.2.2
+numpy==1.26.4
+pyarrow==17.0.0            # нужен для чтения parquet-кэша дашборда
+scipy==1.13.1
+
+# ML runtime (для .pkl-модели нужны sklearn + lightgbm)
+scikit-learn==1.5.0
+lightgbm==4.3.0
+joblib==1.4.2
+
+# BI / Dashboard
+streamlit==1.35.0
+plotly==5.22.0
+
+# Загрузка raw xlsx (на случай fallback-режима)
+openpyxl==3.1.2
+
+# Utilities
+PyYAML==6.0.1
+python-dotenv==1.0.1

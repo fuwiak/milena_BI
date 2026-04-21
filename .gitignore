@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+
+# Логи
+logs/*.log
+
+# Сырые данные (слишком большие для git; для деплоя используем parquet-кэш в reports/)
+data/*.xlsx
+data/*.pkl
+data/*.parquet
+data/~$*
+data/.~lock.*
+data/*.ipynb
+data/*.docx
+data/*.pdf
+
+# Локальные промежуточные артефакты, не нужные для дашборда
+reports/eda.html
+reports/ews_top500.csv
+
+# КОММИТИМ для деплоя (комментарии — справочно):
+#   models/model.pkl                     ~ 4 MB  — обученная модель (нужна для /client/explain SHAP)
+#   models/ews_rules.yaml                < 1 KB
+#   reports/dashboard_panel.parquet      ~ генерируется build_dashboard_cache.py
+#   reports/dashboard_scored.parquet     ~ --//--
+#   reports/dashboard_timeseries.parquet ~ --//--
+#   reports/portfolio_kpi.json           ~ справочные отчёты
+#   reports/feature_importance.csv
+#   reports/iv_ranking.json
+#   reports/model_metrics.json
+#   reports/segment_profile.json
+#   reports/interpretation.txt

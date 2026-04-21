@@ -1,0 +1,43 @@
+# Виртуалки и кэши
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Исходные данные — не кладём в образ (тяжело и не нужно, используем parquet-кэш)
+data/
+*.xlsx
+*.xls
+
+# Логи
+logs/
+*.log
+
+# Git и IDE
+.git/
+.github/
+.vscode/
+.idea/
+*.iml
+
+# Docs / большие артефакты, не нужные в рантайме дашборда
+*.md
+!README.md
+reports/eda.html
+reports/ews_top500.csv
+
+# Docker-файлы (исключаем сами себя)
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Тесты
+tests/

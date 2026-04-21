@@ -1,0 +1,30 @@
+rules:
+- name: high_dpd
+  expr: dpd > 30
+  weight: 2
+- name: bad_quality
+  expr: quality_category.isin(['III','IV','V','3','4','5'])
+  weight: 1
+- name: pdn_spike
+  expr: pdn_current > 60
+  weight: 1
+- name: no_recent_payment
+  expr: days_since_last_payment > 60
+  weight: 2
+- name: payments_drop
+  expr: payment_ratio_mom < 0.3
+  weight: 1
+- name: utilization_high
+  expr: utilization > 0.9
+  weight: 1
+- name: bankruptcy_trigger
+  expr: is_bankrupt == 1
+  weight: 3
+zones:
+  green:
+    score_max: 0.15
+  yellow:
+    score_min: 0.15
+    score_max: 0.4
+  red:
+    score_min: 0.4

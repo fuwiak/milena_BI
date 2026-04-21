@@ -1,0 +1,127 @@
+[
+  {
+    "feature": "dpd_diff_1m",
+    "iv": 4.096010638378912,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "ifrs_provision_rate",
+    "iv": 4.074633131561859,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_provision",
+    "iv": 3.815917124413245,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_reserve",
+    "iv": 3.664097391022726,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd_mean_1m",
+    "iv": 3.4882614284272924,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd",
+    "iv": 3.4882614284272924,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "expired_actual_days_count",
+    "iv": 3.479265135097943,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd_mean_3m",
+    "iv": 3.3238876413794936,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "percent_expired_actual_days_count",
+    "iv": 3.250916180686377,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd_std_3m",
+    "iv": 2.9225169707084095,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "overdue_density",
+    "iv": 2.842358109481916,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "reserve_rate",
+    "iv": 2.6959091972956375,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd_mean_6m",
+    "iv": 2.650797645304303,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "available_limit_mean_6m",
+    "iv": 2.4445378989094215,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "dpd_std_6m",
+    "iv": 2.440281145048929,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "available_limit_mean_3m",
+    "iv": 2.2433570077713547,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_mean_3m",
+    "iv": 2.23568800653866,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_mean_6m",
+    "iv": 2.1208714448301884,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "available_limit",
+    "iv": 1.7274857287353602,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "available_limit_mean_1m",
+    "iv": 1.7274857287353602,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "available_limit_provision",
+    "iv": 1.7103836072384053,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "utilization",
+    "iv": 1.7014875967407388,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_pct_change_1m",
+    "iv": 1.5880856921126112,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt",
+    "iv": 1.5798367828461168,
+    "strength": "suspicious"
+  },
+  {
+    "feature": "total_debt_mean_1m",
+    "iv": 1.5798367828461168,
+    "strength": "suspicious"
+  }
+]
