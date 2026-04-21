@@ -363,19 +363,24 @@ elif view == "Карточка клиента":
 
         st.subheader("Объяснение скоринга (SHAP)")
         model = load_model_artifact()
-        if model is not None:
+        if model is not None and not scored_row.empty:
             try:
                 from src.interpretation import explain_one
-                cols = model.numeric_features + model.categorical_features
-                present = [c for c in cols if c in sub.columns]
-                if present:
-                    expl = explain_one(model, sub[present].tail(1), top_n=7)
-                    st.dataframe(pd.DataFrame(expl), use_container_width=True)
+                cols = list(model.numeric_features) + list(model.categorical_features)
+                # scored_row хранит все признаки модели (см. build_dashboard_cache.py)
+                missing = [c for c in cols if c not in scored_row.columns]
+                if missing:
+                    # fallback — добавляем NaN для отсутствующих колонок, imputer модели их заполнит
+                    row_for_shap = scored_row.copy()
+                    for c in missing:
+                        row_for_shap[c] = pd.NA
                 else:
-                    st.info("Нет признаков для SHAP в кэше. SHAP доступен при запуске с raw xlsx.")
+                    row_for_shap = scored_row
+                expl = explain_one(model, row_for_shap[cols].head(1), top_n=7)
+                st.dataframe(pd.DataFrame(expl), use_container_width=True)
             except Exception as exc:  # noqa: BLE001
                 st.info(f"SHAP недоступен: {exc}")
-        else:
+        elif model is None:
             st.info("Модель ещё не обучена — запустите scripts/run_pipeline.py")
 
 
