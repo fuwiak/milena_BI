@@ -16,6 +16,9 @@ scikit-learn==1.8.0
 lightgbm==4.6.0
 joblib==1.4.2
 
+# SHAP для объяснения скоринга на экране «Карточка клиента»
+shap==0.48.0
+
 # BI / Dashboard (версии совместимы с numpy 2.x / pandas 3.x)
 streamlit==1.56.0
 plotly==6.7.0
