@@ -332,9 +332,24 @@ elif view == "Карточка клиента":
                           title=f"{metric} — {credit_id}")
             st.plotly_chart(fig, use_container_width=True)
 
+        def _as_list(value) -> list:
+            """Безопасно приводит значение к list — работает для None / numpy-array /
+            списков / строк (parquet round-trip превращает list → numpy.ndarray,
+            а `array or []` падает на ValueError)."""
+            if value is None:
+                return []
+            try:
+                if hasattr(value, "tolist"):
+                    value = value.tolist()
+            except Exception:  # noqa: BLE001
+                pass
+            if isinstance(value, (list, tuple)):
+                return [x for x in value if x is not None and str(x) != "nan"]
+            return [value]
+
         if not scored_row.empty:
             st.subheader("Сработавшие правила EWS")
-            rules_fired = list(scored_row["rules_triggered"].iloc[0] or [])
+            rules_fired = _as_list(scored_row["rules_triggered"].iloc[0])
             if rules_fired:
                 for r in rules_fired:
                     st.markdown(f"- `{r}`")
@@ -342,7 +357,7 @@ elif view == "Карточка клиента":
                 st.info("Правила не сработали — клиент в зелёной зоне.")
 
             st.subheader("Рекомендации")
-            recs = list(scored_row["recommendations"].iloc[0] or [])
+            recs = _as_list(scored_row["recommendations"].iloc[0])
             for r in recs:
                 st.markdown(f"- {r}")
 
