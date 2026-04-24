@@ -1,28 +1,16 @@
-# =============================================================================
-# Dev-зависимости для локального пайплайна, обучения модели, EDA и API.
-# На Railway не нужны — только runtime из requirements.txt.
-# Установка: pip install -r requirements.txt -r requirements-dev.txt
-# =============================================================================
-
-# Дополнительные ML-библиотеки
 xgboost==2.0.3
 shap==0.45.1
 
-# EDA / визуализация
 matplotlib==3.9.0
 seaborn==0.13.2
 
-# FastAPI-сервис
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
 pydantic==2.7.3
 python-multipart==0.0.9
 
-# Streamlit-расширения
 streamlit-aggrid==0.3.4.post3
 
-# Drift monitoring
 evidently==0.4.30
 
-# Прочее
 tqdm==4.66.4

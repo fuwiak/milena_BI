@@ -20,7 +20,6 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-# sklearn шумит про имена фич (LightGBM обёртка), пропуски в пустых std_1m и т.п.
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -42,9 +41,6 @@ from .utils import get_logger, save_pickle
 logger = get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Структуры
-# ---------------------------------------------------------------------------
 @dataclass
 class TrainedModel:
     """Контейнер обученной модели со всеми артефактами, нужными сервису и дашборду."""
@@ -60,9 +56,6 @@ class TrainedModel:
     trained_at: str = ""
 
 
-# ---------------------------------------------------------------------------
-# Предобработка
-# ---------------------------------------------------------------------------
 def build_preprocessor(num_cols: list[str], cat_cols: list[str]) -> ColumnTransformer:
     numeric_transformer = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
@@ -95,14 +88,11 @@ def _make_classifier(model_type: str):
             random_state=config.RANDOM_STATE,
         )
     if model_type == "lightgbm":
-        from lightgbm import LGBMClassifier  # lazy import
+        from lightgbm import LGBMClassifier
         return LGBMClassifier(**config.LGBM_PARAMS)
     raise ValueError(f"Unknown model_type={model_type}")
 
 
-# ---------------------------------------------------------------------------
-# Train
-# ---------------------------------------------------------------------------
 def train_model(
     df: pd.DataFrame,
     target_col: str = config.TARGET_COL,
@@ -195,9 +185,6 @@ def _extract_feature_importance(
         return None
 
 
-# ---------------------------------------------------------------------------
-# Persistence
-# ---------------------------------------------------------------------------
 def save_model(model: TrainedModel, path: Path | str = config.MODEL_PATH) -> Path:
     save_pickle(model, path)
     logger.info("Модель сохранена: %s", path)

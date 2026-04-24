@@ -21,7 +21,6 @@ def recommend_for_client(row: pd.Series) -> list[str]:
     """Возвращает список рекомендаций по одному клиенту (строка с EWS-результатом)."""
     recs: list[str] = []
     zone = row.get("zone", "green")
-    # приводим имена правил к обычным python-строкам — np.str_ портит CSV
     rules = set(str(r) for r in (row.get("rules_triggered", []) or []))
 
     if zone == "red":

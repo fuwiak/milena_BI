@@ -21,7 +21,7 @@ def correlation_with_target(
     exclude_leaky=True — отсекает колонки из LEAKY_COL_PREFIXES (dpd, pdn_current и т.д.),
     чтобы отчёт по признакам для ML-модели был согласован с get_feature_columns.
     """
-    from .feature_engineering import _is_leaky  # локальный импорт во избежание циклов
+    from .feature_engineering import _is_leaky
 
     nums = [c for c in df.select_dtypes(include=[np.number]).columns if c != target_col]
     if exclude_leaky:

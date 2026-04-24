@@ -20,9 +20,6 @@ from .utils import get_logger
 logger = get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Описательные таблицы
-# ---------------------------------------------------------------------------
 def describe_schema(df: pd.DataFrame) -> pd.DataFrame:
     """Возвращает сводку по типам/пропускам/уникальности всех колонок."""
     rows = []
@@ -50,9 +47,6 @@ def describe_numeric(df: pd.DataFrame) -> pd.DataFrame:
     return desc
 
 
-# ---------------------------------------------------------------------------
-# Агрегаты по портфелю
-# ---------------------------------------------------------------------------
 def portfolio_kpi(df: pd.DataFrame, target_col: str = config.TARGET_COL) -> dict:
     """Ключевые KPI портфеля для BI-дашборда."""
     out = {
@@ -92,9 +86,6 @@ def aggregate_by(
     return out.sort_values("n_contracts", ascending=False).reset_index(drop=True)
 
 
-# ---------------------------------------------------------------------------
-# Временная динамика
-# ---------------------------------------------------------------------------
 def default_rate_over_time(df: pd.DataFrame, target_col: str = config.TARGET_COL) -> pd.DataFrame:
     """Динамика доли дефолтов и объёма задолженности по отчётным датам."""
     if "report_date_as_of" not in df.columns:
@@ -140,9 +131,6 @@ def pre_default_trajectory(
     return tmp.groupby("t")[feature].agg(["mean", "median", "count"]).reset_index()
 
 
-# ---------------------------------------------------------------------------
-# Полный EDA-отчёт
-# ---------------------------------------------------------------------------
 def generate_eda_report(
     df: pd.DataFrame,
     output_dir: Path = config.REPORTS_DIR,

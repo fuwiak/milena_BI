@@ -3,9 +3,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Пути
-# ---------------------------------------------------------------------------
 ROOT_DIR: Path = Path(__file__).resolve().parents[1]
 DATA_DIR: Path = ROOT_DIR / "data"
 MODELS_DIR: Path = ROOT_DIR / "models"
@@ -20,9 +17,6 @@ REFERENCE_STATS_PATH: Path = MODELS_DIR / "reference_stats.json"
 for p in (MODELS_DIR, REPORTS_DIR, LOGS_DIR):
     p.mkdir(parents=True, exist_ok=True)
 
-# ---------------------------------------------------------------------------
-# Схема данных (40 колонок исходной витрины)
-# ---------------------------------------------------------------------------
 ID_COLS: list[str] = ["credit_id", "borrower_id"]
 
 DATE_COLS: list[str] = [
@@ -34,7 +28,6 @@ DATE_COLS: list[str] = [
     "last_payment_date",
 ]
 
-# Категориальные поля
 CATEGORICAL_COLS: list[str] = [
     "sex",
     "loan_program",
@@ -44,10 +37,8 @@ CATEGORICAL_COLS: list[str] = [
     "region_from_address",
 ]
 
-# Колонки, которые EDA рекомендует исключить (высокая доля пропусков / плохое качество)
 DROP_COLS: list[str] = ["position", "attested_income", "education"]
 
-# Числовые поведенческие признаки
 NUMERIC_COLS: list[str] = [
     "initial_amount",
     "total_debt",
@@ -74,19 +65,13 @@ NUMERIC_COLS: list[str] = [
 
 FLAG_COLS: list[str] = ["sold_flg", "forgiven_flg"]
 
-# ---------------------------------------------------------------------------
-# Целевая переменная
-# ---------------------------------------------------------------------------
-TARGET_COL: str = "default_target"            # состояние «в дефолте сейчас»
-FORWARD_TARGET_COL: str = "default_future"     # «станет дефолтным в ближайшие N месяцев»
-FORWARD_HORIZON_MONTHS: int = 3                # горизонт прогноза EWS, месяцев
+TARGET_COL: str = "default_target"
+FORWARD_TARGET_COL: str = "default_future"
+FORWARD_HORIZON_MONTHS: int = 3
 DEFAULT_DPD_THRESHOLD: int = 90
 PDN_DEFAULT_THRESHOLD: float = 80.0
 QUALITY_BAD_CATEGORIES: tuple[str, ...] = ("IV", "V", "4", "5")
 
-# ---------------------------------------------------------------------------
-# Пороги EWS (Early Warning System)
-# ---------------------------------------------------------------------------
 EWS_ZONES = {
     "green": {"score_max": 0.15},
     "yellow": {"score_min": 0.15, "score_max": 0.40},
@@ -103,9 +88,6 @@ EWS_RULES: list[dict] = [
     {"name": "bankruptcy_trigger", "expr": "is_bankrupt == 1", "weight": 3},
 ]
 
-# ---------------------------------------------------------------------------
-# Параметры обучения
-# ---------------------------------------------------------------------------
 RANDOM_STATE: int = 42
 TEST_SIZE: float = 0.2
 N_FOLDS: int = 5
@@ -125,7 +107,6 @@ LGBM_PARAMS: dict = {
     "verbose": -1,
 }
 
-# Пороги для drift-детекции
 DRIFT_PSI_THRESHOLD: float = 0.25
 DRIFT_KS_PVALUE: float = 0.01
-MODEL_METRIC_DROP_PCT: float = 0.10  # >10% просадка ROC-AUC → переобучение
+MODEL_METRIC_DROP_PCT: float = 0.10

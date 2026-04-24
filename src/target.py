@@ -79,10 +79,8 @@ def build_forward_target(
         g_ym_sorted = g_ym[order]
         g_y_sorted = g_y[order]
         n = len(idx)
-        # для каждого i ищем j такие, что g_ym_sorted[j] в (ym_i, ym_i+horizon]
         for pos in range(n):
             t = g_ym_sorted[pos]
-            # найти диапазон индексов с помощью searchsorted
             j_lo = np.searchsorted(g_ym_sorted, t + 1, side="left")
             j_hi = np.searchsorted(g_ym_sorted, t + horizon_months, side="right")
             if j_hi > j_lo:

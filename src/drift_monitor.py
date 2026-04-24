@@ -26,9 +26,6 @@ from .utils import get_logger, save_json
 logger = get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# PSI
-# ---------------------------------------------------------------------------
 def psi(reference: np.ndarray, current: np.ndarray, bins: int = 10) -> float:
     """Population Stability Index. <0.1 — стабильно; 0.1..0.25 — умеренный дрейф; >0.25 — сильный."""
     reference = pd.Series(reference).dropna().values
@@ -45,9 +42,6 @@ def psi(reference: np.ndarray, current: np.ndarray, bins: int = 10) -> float:
     return float(np.sum((cur_pct - ref_pct) * np.log(cur_pct / ref_pct)))
 
 
-# ---------------------------------------------------------------------------
-# Категориальный и распределительный тесты
-# ---------------------------------------------------------------------------
 def ks_test(reference: np.ndarray, current: np.ndarray) -> tuple[float, float]:
     r = pd.Series(reference).dropna()
     c = pd.Series(current).dropna()
@@ -69,9 +63,6 @@ def chi2_test(reference: pd.Series, current: pd.Series) -> tuple[float, float]:
     return float(chi2), float(p)
 
 
-# ---------------------------------------------------------------------------
-# Полный отчёт
-# ---------------------------------------------------------------------------
 @dataclass
 class DriftReport:
     features: pd.DataFrame

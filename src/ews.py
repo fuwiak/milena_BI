@@ -25,13 +25,10 @@ logger = get_logger(__name__)
 
 @dataclass
 class EWSResult:
-    scored: pd.DataFrame  # credit_id, score, rule_hits, zone, priority
-    summary: pd.DataFrame  # агрегат по зонам
+    scored: pd.DataFrame
+    summary: pd.DataFrame
 
 
-# ---------------------------------------------------------------------------
-# Rule engine — векторизованный (pandas Series в namespace eval)
-# ---------------------------------------------------------------------------
 def _vectorized_eval(expr: str, df: pd.DataFrame) -> np.ndarray:
     """Эвалюирует выражение в векторизованном режиме: все операции идут над pandas.Series
     целиком, а не построчно. Правила вида `col.isin([...])` тоже поддерживаются.
@@ -52,7 +49,6 @@ def _vectorized_eval(expr: str, df: pd.DataFrame) -> np.ndarray:
         return result.fillna(False).astype(bool).to_numpy()
     if isinstance(result, np.ndarray):
         return result.astype(bool)
-    # скалярный результат → раскатываем на всю длину
     return np.full(len(df), bool(result), dtype=bool)
 
 
@@ -69,7 +65,6 @@ def apply_rules(
 
     n = len(out)
     weight_sum = np.zeros(n, dtype=np.float32)
-    # Матрица сработок: rows x n_rules, 0/1
     hit_matrix = np.zeros((n, len(rules)), dtype=np.int8)
 
     for j, rule in enumerate(rules):
@@ -81,17 +76,12 @@ def apply_rules(
 
     out["rules_weight_sum"] = weight_sum
 
-    # rules_triggered — строим через numpy-маску без apply(axis=1),
-    # имена кастим к обычному str (np.str_ в CSV выглядит как "np.str_('...')")
     rule_names = [r["name"] for r in rules]
     rule_arr = np.array(rule_names, dtype=object)
     out["rules_triggered"] = [[str(x) for x in rule_arr[row == 1]] for row in hit_matrix]
     return out
 
 
-# ---------------------------------------------------------------------------
-# ML-scoring + зоны
-# ---------------------------------------------------------------------------
 def assign_zone(score: float, zones: dict = None) -> str:
     z = zones or config.EWS_ZONES
     if score < z["green"]["score_max"]:
@@ -123,7 +113,6 @@ def build_ews(
     scored["rules_triggered"] = rules_df["rules_triggered"].values
     scored["rules_weight_sum"] = rules_df["rules_weight_sum"].values
 
-    # правила могут эскалировать зону
     escalate = scored["rules_weight_sum"] >= 3
     scored.loc[escalate & (scored["zone"] == "green"), "zone"] = "yellow"
     scored.loc[scored["rules_weight_sum"] >= 5, "zone"] = "red"
@@ -146,9 +135,6 @@ def build_ews(
     return EWSResult(scored=scored, summary=summary)
 
 
-# ---------------------------------------------------------------------------
-# Хранение бизнес-правил в YAML
-# ---------------------------------------------------------------------------
 def save_rules(rules: list[dict], path: Path | str = config.EWS_RULES_PATH) -> Path:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

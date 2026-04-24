@@ -17,9 +17,6 @@ from .utils import get_logger
 logger = get_logger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Панельные / rolling фичи
-# ---------------------------------------------------------------------------
 def add_rolling_features(df: pd.DataFrame, windows: tuple[int, ...] = (1, 3, 6)) -> pd.DataFrame:
     """Добавляет rolling-средние/std и diff/pct_change ключевых признаков по credit_id.
 
@@ -44,7 +41,6 @@ def add_rolling_features(df: pd.DataFrame, windows: tuple[int, ...] = (1, 3, 6))
 
     grp = df.groupby("credit_id", sort=False, observed=True)
 
-    # diff / pct_change — векторизованные groupby-операции
     for col in base_cols:
         df[f"{col}_diff_1m"] = grp[col].diff(1)
         try:
@@ -52,16 +48,15 @@ def add_rolling_features(df: pd.DataFrame, windows: tuple[int, ...] = (1, 3, 6))
                 grp[col].pct_change(1, fill_method=None)
                 .replace([np.inf, -np.inf], np.nan)
             )
-        except TypeError:  # старые версии pandas
+        except TypeError:
             df[f"{col}_pct_change_1m"] = grp[col].pct_change(1).replace([np.inf, -np.inf], np.nan)
 
-    # rolling aggregations — по каждому окну один batch-вызов сразу по всем колонкам
     for w in windows:
         roll = grp[base_cols].rolling(w, min_periods=1)
         mean_df = roll.mean().reset_index(level=0, drop=True)
         for col in base_cols:
             df[f"{col}_mean_{w}m"] = mean_df[col].values
-        if w >= 2:  # std при окне 1 всегда NaN, такие фичи бесполезны
+        if w >= 2:
             std_df = roll.std().reset_index(level=0, drop=True)
             for col in base_cols:
                 df[f"{col}_std_{w}m"] = std_df[col].values
@@ -110,9 +105,6 @@ def add_dpd_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# ---------------------------------------------------------------------------
-# Итоговая сборка
-# ---------------------------------------------------------------------------
 def build_feature_set(
     df: pd.DataFrame,
     include_rolling: bool = True,
@@ -126,9 +118,6 @@ def build_feature_set(
     return df
 
 
-# ---------------------------------------------------------------------------
-# Деление на признаки и таргет
-# ---------------------------------------------------------------------------
 TECHNICAL_COLS: tuple[str, ...] = (
     "credit_id",
     "borrower_id",
@@ -138,7 +127,7 @@ TECHNICAL_COLS: tuple[str, ...] = (
     "date_issued",
     "date_signing",
     "last_payment_date",
-    "employer",                # высокая кардинальность, в baseline drop
+    "employer",
     config.TARGET_COL,
     config.FORWARD_TARGET_COL,
     "has_future_obs",
@@ -148,9 +137,6 @@ TECHNICAL_COLS: tuple[str, ...] = (
     "forgiven_flg",
 )
 
-# Поля, ИЗ КОТОРЫХ построен таргет default_target — их нельзя подавать в модель,
-# иначе получим тривиальное ROC-AUC=1.0 (таргет-утечка).
-# Сюда попадают и все производные (dpd_mean_*, dpd_diff_1m и т.п.).
 LEAKY_COL_PREFIXES: tuple[str, ...] = (
     "dpd",
     "pdn_current",
@@ -159,8 +145,8 @@ LEAKY_COL_PREFIXES: tuple[str, ...] = (
     "is_bankrupt",
     "expired_actual_days_count",
     "percent_expired_actual_days_count",
-    "reserve_rate",               # завязана на quality_category
-    "ifrs_provision_rate",        # то же самое
+    "reserve_rate",
+    "ifrs_provision_rate",
     "total_debt_reserve",
     "total_debt_provision",
     "available_limit_reserve",

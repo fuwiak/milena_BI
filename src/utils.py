@@ -16,7 +16,7 @@ from . import config
 
 _LOG_FORMAT = "%(asctime)s | %(levelname)-7s | %(name)s | %(message)s"
 _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-_FILE_HANDLERS_ATTACHED: set[str] = set()  # чтобы не дублировать file-handler'ы
+_FILE_HANDLERS_ATTACHED: set[str] = set()
 
 
 def _build_file_handler(logfile: Path) -> RotatingFileHandler:

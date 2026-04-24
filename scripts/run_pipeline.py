@@ -97,7 +97,6 @@ def main() -> None:
 
     logger.info("=== Шаг 5. Корреляционный анализ и отбор индикаторов ===")
     num_cols, _ = get_feature_columns(df)
-    # IV тяжёл на большом датасете × много фичей — считаем на сэмпле и только для top-корреляций
     try:
         from src.correlation import correlation_with_target
 
@@ -113,7 +112,6 @@ def main() -> None:
 
     logger.info("=== Шаг 6. Сегментация (rule-based) ===")
     df["segment"] = rule_based_segment(df)
-    # профиль сегментов считаем по последнему срезу — чтобы n_contracts совпал с KPI
     if "report_date_as_of" in df.columns:
         _last = (df.sort_values("report_date_as_of")
                    .drop_duplicates(subset=["credit_id"], keep="last"))

@@ -46,7 +46,6 @@ def load_raw_data(path: Path | str = config.RAW_DATA_PATH) -> pd.DataFrame:
     df = pd.read_excel(path, engine="openpyxl")
     logger.info("Прочитано строк: %d, колонок: %d", len(df), df.shape[1])
 
-    # пробуем parquet, иначе pickle (всегда работает)
     saved = False
     try:
         df.to_parquet(parquet_cache, index=False)

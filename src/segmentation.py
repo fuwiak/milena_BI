@@ -35,9 +35,6 @@ BEHAVIOR_FEATURES: list[str] = [
 ]
 
 
-# ---------------------------------------------------------------------------
-# Rule-based сегментация
-# ---------------------------------------------------------------------------
 def rule_based_segment(df: pd.DataFrame) -> pd.Series:
     """Назначает сегмент по простым бизнес-правилам."""
     seg = pd.Series("stable", index=df.index, dtype="object")
@@ -74,9 +71,6 @@ def segment_profile(df: pd.DataFrame, seg_col: str = "segment",
     return out.sort_values("n_contracts", ascending=False).reset_index(drop=True)
 
 
-# ---------------------------------------------------------------------------
-# KMeans-кластеризация
-# ---------------------------------------------------------------------------
 def _prepare_matrix(df: pd.DataFrame, features: Iterable[str]) -> pd.DataFrame:
     features = [c for c in features if c in df.columns]
     X = df[features].copy()

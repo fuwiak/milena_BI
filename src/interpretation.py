@@ -42,9 +42,6 @@ def permutation_importance_report(
     )
 
 
-# ---------------------------------------------------------------------------
-# SHAP
-# ---------------------------------------------------------------------------
 def compute_shap_values(model: TrainedModel, X: pd.DataFrame, sample_size: int = 5_000):
     """Считает SHAP для подвыборки (LightGBM/XGBoost — TreeExplainer; иначе LinearExplainer)."""
     import shap

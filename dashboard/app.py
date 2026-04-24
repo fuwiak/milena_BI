@@ -48,14 +48,10 @@ TS_CACHE = config.REPORTS_DIR / "dashboard_timeseries.parquet"
 CACHE_AVAILABLE = PANEL_CACHE.exists() and SCORED_CACHE.exists()
 
 
-# ---------------------------------------------------------------------------
-# Загрузка данных
-# ---------------------------------------------------------------------------
 @st.cache_data(show_spinner="Загружаю данные...", ttl=3600)
 def load_panel() -> pd.DataFrame:
     if CACHE_AVAILABLE:
         return pd.read_parquet(PANEL_CACHE)
-    # fallback для локальной разработки — полный пайплайн
     from src.data_loader import load_and_prepare
     from src.feature_engineering import build_feature_set
     from src.target import build_default_flag
@@ -71,7 +67,6 @@ def load_panel() -> pd.DataFrame:
 def load_scored() -> pd.DataFrame:
     if CACHE_AVAILABLE:
         return pd.read_parquet(SCORED_CACHE)
-    # fallback — считаем скоринг в рантайме
     from src.ews import apply_rules, assign_zone, load_rules
     from src.model import predict_proba
     from src.recommendations import recommend_for_client
@@ -132,13 +127,10 @@ def load_model_artifact():
 
 df_full = load_panel()
 df_scored = load_scored()
-df_last = df_scored  # последний срез уже содержит всё нужное
+df_last = df_scored
 df_ts = load_timeseries()
 
 
-# ---------------------------------------------------------------------------
-# Сайдбар
-# ---------------------------------------------------------------------------
 st.sidebar.title("📊 Кредитные риски КК")
 st.sidebar.caption(
     f"BI-решение для мониторинга кредитных рисков\n\n"
@@ -163,9 +155,6 @@ st.sidebar.caption(
 )
 
 
-# ---------------------------------------------------------------------------
-# Экран 1 — Обзор
-# ---------------------------------------------------------------------------
 if view == "Обзор портфеля":
     st.title("Обзор портфеля кредитных карт")
     kpi = portfolio_kpi(df_last)
@@ -201,9 +190,6 @@ if view == "Обзор портфеля":
         st.dataframe(qa, use_container_width=True)
 
 
-# ---------------------------------------------------------------------------
-# Экран 2 — Сегменты
-# ---------------------------------------------------------------------------
 elif view == "Сегменты":
     st.title("Сегментация клиентов")
 
@@ -242,9 +228,6 @@ elif view == "Сегменты":
         st.plotly_chart(fig2, use_container_width=True)
 
 
-# ---------------------------------------------------------------------------
-# Экран 3 — EWS
-# ---------------------------------------------------------------------------
 elif view == "Early Warning":
     st.title("Система раннего предупреждения (EWS)")
     st.caption(
@@ -293,9 +276,6 @@ elif view == "Early Warning":
     st.plotly_chart(fig, use_container_width=True)
 
 
-# ---------------------------------------------------------------------------
-# Экран 4 — карточка клиента
-# ---------------------------------------------------------------------------
 elif view == "Карточка клиента":
     st.title("Карточка клиента (drilldown)")
 
@@ -367,10 +347,8 @@ elif view == "Карточка клиента":
             try:
                 from src.interpretation import explain_one
                 cols = list(model.numeric_features) + list(model.categorical_features)
-                # scored_row хранит все признаки модели (см. build_dashboard_cache.py)
                 missing = [c for c in cols if c not in scored_row.columns]
                 if missing:
-                    # fallback — добавляем NaN для отсутствующих колонок, imputer модели их заполнит
                     row_for_shap = scored_row.copy()
                     for c in missing:
                         row_for_shap[c] = pd.NA
@@ -384,9 +362,6 @@ elif view == "Карточка клиента":
             st.info("Модель ещё не обучена — запустите scripts/run_pipeline.py")
 
 
-# ---------------------------------------------------------------------------
-# Экран 5 — drift
-# ---------------------------------------------------------------------------
 else:
     st.title("Мониторинг качества модели и drift")
     st.caption(

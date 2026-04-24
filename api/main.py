@@ -38,7 +38,7 @@ from src.utils import configure_logging, get_logger, load_pickle
 configure_logging(app="api")
 logger = get_logger("api")
 
-API_KEY = os.getenv("MILENA_API_KEY")  # если None — проверка отключена
+API_KEY = os.getenv("MILENA_API_KEY")
 
 app = FastAPI(
     title="Milena BI — Credit Card Risk Service",
@@ -48,9 +48,6 @@ app = FastAPI(
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
-# ---------------------------------------------------------------------------
-# Lazy-loaded singletons: модель и кешированный срез витрины
-# ---------------------------------------------------------------------------
 @lru_cache(maxsize=1)
 def get_model() -> TrainedModel:
     if not config.MODEL_PATH.exists():
@@ -82,9 +79,6 @@ def _check_api_key(x_api_key: Optional[str]) -> None:
         raise HTTPException(status_code=401, detail="invalid api key")
 
 
-# ---------------------------------------------------------------------------
-# Pydantic схемы
-# ---------------------------------------------------------------------------
 class ClientFeatures(BaseModel):
     """Минимальный набор признаков для online-скоринга."""
     credit_id: Optional[str] = None
@@ -115,7 +109,7 @@ class ClientFeatures(BaseModel):
     is_bankrupt: Optional[int] = 0
 
     class Config:
-        extra = "allow"  # позволяем присылать любые дополнительные признаки
+        extra = "allow"
 
 
 class ScoreResponse(BaseModel):
@@ -130,9 +124,6 @@ class BatchRequest(BaseModel):
     records: list[ClientFeatures] = Field(..., min_length=1)
 
 
-# ---------------------------------------------------------------------------
-# Эндпоинты
-# ---------------------------------------------------------------------------
 @app.get("/health")
 def health() -> dict:
     try:

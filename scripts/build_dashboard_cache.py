@@ -98,8 +98,6 @@ def main() -> None:
 
     logger.info("=== 1. Загрузка и feature engineering (с rolling) ===")
     df = load_and_prepare(config.RAW_DATA_PATH)
-    # include_rolling=True — строим все признаки модели (_mean_3m, _std_6m, _diff_1m и т.д.),
-    # иначе SHAP на экране «Карточка клиента» падает из-за нехватки колонок.
     df = build_feature_set(df, include_rolling=True)
     df = build_default_flag(df)
     df["segment"] = rule_based_segment(df)
@@ -116,7 +114,6 @@ def main() -> None:
 
     logger.info("=== 3. Скоринг и EWS ===")
     model = load_pickle(config.MODEL_PATH) if config.MODEL_PATH.exists() else None
-    # колонки, которые реально нужны модели для SHAP/предсказаний
     model_cols: list[str] = []
     if model is not None:
         model_cols = list(getattr(model, "numeric_features", []) or []) + \
@@ -147,7 +144,6 @@ def main() -> None:
 
     logger.info("=== 5. Сохранение parquet ===")
     panel_out = _shrink_dtypes(_select_existing(df, PANEL_COLS))
-    # scored_out включает все колонки модели — нужны для SHAP на экране drilldown
     scored_cols = list(dict.fromkeys(PANEL_COLS + SCORED_EXTRA + model_cols))
     scored_out = _shrink_dtypes(_select_existing(last, scored_cols))
     ts_out = ts.copy() if isinstance(ts, pd.DataFrame) else pd.DataFrame()
