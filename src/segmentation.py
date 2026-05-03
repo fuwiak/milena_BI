@@ -1,4 +1,4 @@
-"""Сегментация клиентов по поведенческим и риск-характеристикам (Глава 2.2 ВКР).
+"""Сегментация клиентов по поведенческим и риск-характеристикам (глава 2 ВКР).
 
 Реализованы два подхода:
 
@@ -51,11 +51,43 @@ def rule_based_segment(df: pd.DataFrame) -> pd.Series:
     return seg
 
 
-def segment_profile(df: pd.DataFrame, seg_col: str = "segment",
-                    target_col: str = config.TARGET_COL) -> pd.DataFrame:
-    """Профиль по каждому сегменту: число договоров, долг, уровень дефолта."""
+def segment_profile(
+    df: pd.DataFrame,
+    seg_col: str = "segment",
+    target_col: str = config.TARGET_COL,
+    *,
+    dedupe_credit_last_obs: bool = True,
+) -> pd.DataFrame:
+    """Профиль по каждому сегменту: число договоров, долг, уровень дефолта.
+
+    Если передана вся панель (несколько строк на ``credit_id``), без дедупликации
+    один договор может учитываться в *разных* сегментах в разные месяцы: тогда
+    сумма ``n_contracts`` по строкам таблицы превышает реальное число договоров.
+
+    По умолчанию оставляем по каждому ``credit_id`` одну строку — с максимальной
+    ``report_date_as_of`` (как актуальный срез портфеля).
+    """
     if seg_col not in df.columns:
         raise KeyError(seg_col)
+
+    work = df
+    if (
+        dedupe_credit_last_obs
+        and "credit_id" in df.columns
+        and "report_date_as_of" in df.columns
+        and df["credit_id"].duplicated().any()
+    ):
+        before = len(df)
+        work = (
+            df.sort_values(["report_date_as_of", "credit_id"], na_position="last")
+            .drop_duplicates(subset=["credit_id"], keep="last")
+        )
+        logger.info(
+            "segment_profile: срез последней даты по credit_id: %d -> %d строк",
+            before,
+            len(work),
+        )
+
     agg = {"credit_id": "nunique"}
     for c in ["total_debt", "available_limit", "payment_sum_1m"]:
         if c in df.columns:
@@ -66,7 +98,7 @@ def segment_profile(df: pd.DataFrame, seg_col: str = "segment",
     if target_col in df.columns:
         agg[target_col] = "mean"
 
-    out = df.groupby(seg_col, dropna=False).agg(agg).reset_index()
+    out = work.groupby(seg_col, dropna=False).agg(agg).reset_index()
     out = out.rename(columns={"credit_id": "n_contracts", target_col: "default_rate"})
     return out.sort_values("n_contracts", ascending=False).reset_index(drop=True)
 

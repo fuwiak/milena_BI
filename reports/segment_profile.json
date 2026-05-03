@@ -1,46 +1,46 @@
 [
   {
     "segment": "stress",
-    "n_contracts": 32104,
-    "total_debt": 1576113408.0,
-    "available_limit": 6546221056.0,
-    "payment_sum_1m": 74906608.0,
-    "pdn_current": 0.2914404571056366,
-    "dpd": 0.31138495631536783,
-    "utilization": 0.4042171835899353,
-    "default_rate": 0.030436996054532796
+    "n_contracts": 25717,
+    "total_debt": 29683158.0,
+    "available_limit": 12406068.0,
+    "payment_sum_1m": 2523634.0,
+    "pdn_current": 0.425269216299057,
+    "dpd": 0.07874168837733794,
+    "utilization": 0.7194119691848755,
+    "default_rate": 0.1166154683672279
   },
   {
     "segment": "growing",
-    "n_contracts": 16729,
-    "total_debt": 4345702912.0,
-    "available_limit": 560664320.0,
-    "payment_sum_1m": 1184199168.0,
-    "pdn_current": 0.4123048186302185,
-    "dpd": 5.8596038907769834e-05,
-    "utilization": 0.9458298087120056,
-    "default_rate": 0.000996132661432087
-  },
-  {
-    "segment": "stable",
-    "n_contracts": 15771,
-    "total_debt": 365420000.0,
-    "available_limit": 1743178752.0,
-    "payment_sum_1m": 439277216.0,
-    "pdn_current": 0.18468651175498962,
-    "dpd": 0.4185904888445995,
-    "utilization": 0.15464738011360168,
-    "default_rate": 0.00013840447323257488
+    "n_contracts": 4522,
+    "total_debt": 139735856.0,
+    "available_limit": 1524034.25,
+    "payment_sum_1m": 72260992.0,
+    "pdn_current": 0.42153361439704895,
+    "dpd": 0.0,
+    "utilization": 0.9982713460922241,
+    "default_rate": 0.003980539584254755
   },
   {
     "segment": "delinquent",
-    "n_contracts": 5562,
-    "total_debt": 2019723648.0,
-    "available_limit": 28282754.0,
-    "payment_sum_1m": 2479815.5,
-    "pdn_current": 0.7144051790237427,
-    "dpd": 200.72201399571028,
-    "utilization": 0.9710243940353394,
-    "default_rate": 0.9979201421236216
+    "n_contracts": 1807,
+    "total_debt": 81358944.0,
+    "available_limit": 140328.8125,
+    "payment_sum_1m": 81247.1484375,
+    "pdn_current": 0.7671322822570801,
+    "dpd": 323.8738240177089,
+    "utilization": 0.968804657459259,
+    "default_rate": 1.0
+  },
+  {
+    "segment": "stable",
+    "n_contracts": 228,
+    "total_debt": 2712221.5,
+    "available_limit": 5445094.0,
+    "payment_sum_1m": 2685854.5,
+    "pdn_current": 0.25833773612976074,
+    "dpd": 2.0482456140350878,
+    "utilization": 0.26338449120521545,
+    "default_rate": 0.0043859649122807015
   }
 ]
