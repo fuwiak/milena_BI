@@ -70,7 +70,7 @@ def load_panel() -> pd.DataFrame:
 def load_scored() -> pd.DataFrame:
     if CACHE_AVAILABLE:
         return pd.read_parquet(SCORED_CACHE)
-    from src.ews import apply_rules, assign_zone, load_rules
+    from src.ews import apply_rules, load_rules, zones_after_rules
     from src.model import predict_proba
     from src.recommendations import recommend_for_client
 
@@ -92,8 +92,9 @@ def load_scored() -> pd.DataFrame:
         rules_df = apply_rules(df_last, rules)
         df_last["rules_triggered"] = rules_df["rules_triggered"].values
         df_last["rules_weight_sum"] = rules_df["rules_weight_sum"].values
-        df_last["zone"] = [assign_zone(s, zones) for s in df_last["risk_score"]]
-        df_last.loc[df_last["rules_weight_sum"] >= 5, "zone"] = "red"
+        df_last["zone"] = zones_after_rules(
+            df_last["risk_score"], df_last["rules_weight_sum"], zones
+        )
     else:
         df_last["risk_score"] = 0.0
         df_last["zone"] = "green"

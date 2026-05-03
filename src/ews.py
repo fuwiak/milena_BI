@@ -91,6 +91,25 @@ def assign_zone(score: float, zones: dict = None) -> str:
     return "red"
 
 
+def zones_after_rules(
+    risk_score: pd.Series,
+    rules_weight_sum: pd.Series,
+    zones: dict | None = None,
+) -> pd.Series:
+    """Итоговая зона EWS: скоринг по порогам + эскалация по сумме весов правил (как в ВКР)."""
+    zcfg = zones or config.EWS_ZONES
+    zone = pd.Series(
+        [assign_zone(float(s), zcfg) for s in risk_score],
+        index=risk_score.index,
+        dtype=object,
+    )
+    rw = rules_weight_sum.astype(float)
+    escalate = rw >= 3
+    zone.loc[escalate & (zone == "green")] = "yellow"
+    zone.loc[rw >= 5] = "red"
+    return zone
+
+
 def build_ews(
     df: pd.DataFrame,
     model: TrainedModel,
@@ -107,15 +126,14 @@ def build_ews(
         "risk_score": scores,
         "total_debt": df.get("total_debt", pd.Series(0, index=df.index)).values,
     })
-    scored["zone"] = scored["risk_score"].apply(lambda s: assign_zone(s, zones))
-
     rules_df = apply_rules(df, rules)
     scored["rules_triggered"] = rules_df["rules_triggered"].values
     scored["rules_weight_sum"] = rules_df["rules_weight_sum"].values
-
-    escalate = scored["rules_weight_sum"] >= 3
-    scored.loc[escalate & (scored["zone"] == "green"), "zone"] = "yellow"
-    scored.loc[scored["rules_weight_sum"] >= 5, "zone"] = "red"
+    scored["zone"] = zones_after_rules(
+        scored["risk_score"],
+        scored["rules_weight_sum"],
+        zones,
+    )
 
     scored["priority"] = scored["risk_score"] * scored["total_debt"].clip(lower=0)
     scored = scored.sort_values("priority", ascending=False).reset_index(drop=True)

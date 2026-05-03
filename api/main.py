@@ -28,7 +28,7 @@ from pydantic import BaseModel, Field
 from src import config
 from src.data_loader import load_and_prepare
 from src.eda import aggregate_by, default_rate_over_time, portfolio_kpi
-from src.ews import apply_rules, assign_zone, load_rules
+from src.ews import apply_rules, load_rules, zones_after_rules
 from src.feature_engineering import build_feature_set
 from src.model import TrainedModel, predict_proba
 from src.recommendations import recommend_for_client
@@ -147,10 +147,9 @@ def _score_df(df: pd.DataFrame) -> pd.DataFrame:
     rules_df = apply_rules(df, rules)
     out = df.copy()
     out["risk_score"] = scores
-    out["zone"] = [assign_zone(s, zones) for s in scores]
     out["rules_triggered"] = rules_df["rules_triggered"].values
     out["rules_weight_sum"] = rules_df["rules_weight_sum"].values
-    out.loc[out["rules_weight_sum"] >= 5, "zone"] = "red"
+    out["zone"] = zones_after_rules(out["risk_score"], out["rules_weight_sum"], zones)
     out["recommendations"] = out.apply(recommend_for_client, axis=1)
     return out
 

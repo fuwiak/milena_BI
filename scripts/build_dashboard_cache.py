@@ -31,7 +31,7 @@ if str(ROOT) not in sys.path:
 from src import config  # noqa: E402
 from src.data_loader import load_and_prepare  # noqa: E402
 from src.eda import default_rate_over_time  # noqa: E402
-from src.ews import apply_rules, assign_zone, load_rules  # noqa: E402
+from src.ews import apply_rules, load_rules, zones_after_rules  # noqa: E402
 from src.feature_engineering import build_feature_set  # noqa: E402
 from src.model import predict_proba  # noqa: E402
 from src.recommendations import recommend_for_client  # noqa: E402
@@ -137,8 +137,7 @@ def main() -> None:
         rules_df = apply_rules(last, rules)
         last["rules_triggered"] = rules_df["rules_triggered"].values
         last["rules_weight_sum"] = rules_df["rules_weight_sum"].values
-        last["zone"] = [assign_zone(s, zones) for s in last["risk_score"]]
-        last.loc[last["rules_weight_sum"] >= 5, "zone"] = "red"
+        last["zone"] = zones_after_rules(last["risk_score"], last["rules_weight_sum"], zones)
 
     last["recommendations"] = last.apply(recommend_for_client, axis=1)
     last["priority"] = last["risk_score"] * last.get("total_debt", pd.Series(0, index=last.index)).clip(lower=0)
