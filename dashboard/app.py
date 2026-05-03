@@ -1,4 +1,4 @@
-"""Streamlit BI-дашборд для мониторинга кредитных рисков (Главы 4.2-4.3 ВКР).
+"""Streamlit BI-дашборд для мониторинга кредитных рисков (Главы 2.1–2.2, 4.2–4.3 ВКР).
 
 Пять экранов:
     1. Overview          — обзор портфеля и ключевые KPI
@@ -11,7 +11,7 @@
     * На проде (Railway, Streamlit Cloud, Docker) дашборд читает три parquet-файла
       из reports/ — они генерируются заранее через `python scripts/build_dashboard_cache.py`.
     * Если parquet отсутствуют (локальная разработка), автоматически делается fallback
-      на исходный xlsx и полный пайплайн в памяти.
+      на исходный xlsx и тот же расчёт forward-target / сегментов, что и в отчётах ВКР.
 
 Локальный запуск:
     streamlit run dashboard/app.py
@@ -31,6 +31,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src import config  # noqa: E402
+
+# Порядок сегментов как в таблице §2.2 ВКР (rule-based)
+SEGMENT_ORDER_THESIS: tuple[str, ...] = ("stable", "growing", "stress", "delinquent")
 from src.eda import aggregate_by, default_rate_over_time, portfolio_kpi  # noqa: E402
 from src.segmentation import rule_based_segment, segment_profile  # noqa: E402
 from src.utils import load_pickle  # noqa: E402
@@ -54,11 +57,11 @@ def load_panel() -> pd.DataFrame:
         return pd.read_parquet(PANEL_CACHE)
     from src.data_loader import load_and_prepare
     from src.feature_engineering import build_feature_set
-    from src.target import build_default_flag
+    from src.target import build_forward_target
 
     df = load_and_prepare(config.RAW_DATA_PATH)
     df = build_feature_set(df, include_rolling=False)
-    df = build_default_flag(df)
+    df = build_forward_target(df, horizon_months=config.FORWARD_HORIZON_MONTHS)
     df["segment"] = rule_based_segment(df)
     return df
 
@@ -192,31 +195,97 @@ if view == "Обзор портфеля":
 
 elif view == "Сегменты":
     st.title("Сегментация клиентов")
+    _n_last = f"{len(df_last):,}".replace(",", " ")
+    st.caption(
+        "**Rule-based (таблица §2.2 ВКР):** один договор --- одна строка на **последней** "
+        f"дате отчёта ({_n_last} договоров); сумма по сегментам равна числу договоров. "
+        "Полная панель «договор × месяц» сохраняется в `reports/segment_profile_panel.json` "
+        "после `run_pipeline.py` (для анализа траекторий). **KMeans:** на том же последнем срезе."
+    )
 
     seg_type = st.radio("Тип сегментации", ["Rule-based", "KMeans"], horizontal=True)
-    df_seg = df_last.copy()
 
     if seg_type == "Rule-based":
-        if "segment" not in df_seg.columns:
-            df_seg["segment"] = rule_based_segment(df_seg)
+        df_rb = df_last.copy()
+        df_rb["segment"] = rule_based_segment(df_rb)
+        target_for_dr = (
+            config.FORWARD_TARGET_COL
+            if config.FORWARD_TARGET_COL in df_rb.columns
+            else config.TARGET_COL
+        )
+        prof = segment_profile(
+            df_rb,
+            "segment",
+            target_col=target_for_dr,
+            dedupe_credit_last_obs=True,
+        )
+        prof_display = prof.set_index("segment").reindex(
+            [s for s in SEGMENT_ORDER_THESIS if s in set(prof["segment"].astype(str))]
+        ).reset_index()
+        st.subheader("Профиль сегментов (последний срез --- как в ВКР)")
+        total_c = int(prof_display["n_contracts"].sum())
+        thesis_cols = prof_display.assign(
+            share_pct=(prof_display["n_contracts"] / total_c * 100).round(1),
+            debt_bn_rub=(prof_display["total_debt"] / 1e9).round(3),
+            util_pct=(prof_display["utilization"] * 100).round(0),
+            default_pct=(prof_display["default_rate"] * 100).round(2),
+        )[
+            [
+                "segment",
+                "share_pct",
+                "n_contracts",
+                "debt_bn_rub",
+                "util_pct",
+                "default_pct",
+            ]
+        ].rename(
+            columns={
+                "segment": "Сегмент",
+                "share_pct": "Доля, %",
+                "n_contracts": "Договоров",
+                "debt_bn_rub": "Долг, млрд ₽",
+                "util_pct": "Util., %",
+                "default_pct": "Default rate, %",
+            }
+        )
+        st.dataframe(thesis_cols, use_container_width=True, hide_index=True)
+        with st.expander("Сырые агрегаты"):
+            st.dataframe(prof_display, use_container_width=True)
+
+        if not prof_display.empty:
+            fig = px.bar(
+                prof_display,
+                x="segment",
+                y="n_contracts",
+                color="default_rate",
+                title="Число договоров по сегментам (последний срез)",
+                color_continuous_scale="Reds",
+                category_orders={"segment": list(SEGMENT_ORDER_THESIS)},
+            )
+            st.plotly_chart(fig, use_container_width=True)
     else:
+        df_km = df_last.copy()
         try:
             from src.segmentation import cluster_segment
+
             k = st.slider("K кластеров", 2, 8, 4)
-            df_seg["segment"] = cluster_segment(df_seg, n_clusters=k).astype(str)
+            df_km["segment"] = cluster_segment(df_km, n_clusters=k).astype(str)
         except Exception as exc:
             st.error(f"KMeans недоступен: {exc}")
-            df_seg["segment"] = rule_based_segment(df_seg)
-
-    prof = segment_profile(df_seg, "segment")
-    st.subheader("Профиль сегментов")
-    st.dataframe(prof, use_container_width=True)
-
-    if not prof.empty:
-        fig = px.bar(prof, x="segment", y="n_contracts", color="default_rate",
-                     title="Число договоров и дефолтность по сегментам",
-                     color_continuous_scale="Reds")
-        st.plotly_chart(fig, use_container_width=True)
+            df_km["segment"] = rule_based_segment(df_km)
+        prof = segment_profile(df_km, "segment", dedupe_credit_last_obs=True)
+        st.subheader("Профиль кластеров (последний срез)")
+        st.dataframe(prof, use_container_width=True)
+        if not prof.empty:
+            fig = px.bar(
+                prof,
+                x="segment",
+                y="n_contracts",
+                color="default_rate",
+                title="Число договоров и дефолтность по кластерам (KMeans, последний срез)",
+                color_continuous_scale="Reds",
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
     dim_choices = [c for c in ["region_from_address", "loan_program", "quality_category", "sex"]
                    if c in df_last.columns]

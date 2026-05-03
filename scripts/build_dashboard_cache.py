@@ -1,6 +1,7 @@
 """Сборка компактного кэша для Streamlit-дашборда (для деплоя на Railway / любой хостинг).
 
-Скрипт читает исходный XLSX + модель, выполняет feature engineering, скоринг и EWS,
+Скрипт читает исходный XLSX + модель, выполняет feature engineering (включая forward-target
+как в run_pipeline для таблицы сегментов ВКР), скоринг и EWS,
 затем сохраняет три компактных parquet-файла, которые дашборд умеет читать мгновенно:
 
     reports/dashboard_panel.parquet      — панельные данные (для drilldown-графиков), compact
@@ -33,7 +34,7 @@ from src.feature_engineering import build_feature_set  # noqa: E402
 from src.model import predict_proba  # noqa: E402
 from src.recommendations import recommend_for_client  # noqa: E402
 from src.segmentation import rule_based_segment  # noqa: E402
-from src.target import build_default_flag  # noqa: E402
+from src.target import build_forward_target  # noqa: E402
 from src.utils import configure_logging, get_logger, load_pickle  # noqa: E402
 
 configure_logging()
@@ -60,6 +61,7 @@ PANEL_COLS: list[str] = [
     "payment_ratio_mom",
     "days_since_last_payment",
     "default_target",
+    "default_future",
 ]
 
 SCORED_EXTRA: list[str] = [
@@ -99,7 +101,7 @@ def main() -> None:
     logger.info("=== 1. Загрузка и feature engineering (с rolling) ===")
     df = load_and_prepare(config.RAW_DATA_PATH)
     df = build_feature_set(df, include_rolling=True)
-    df = build_default_flag(df)
+    df = build_forward_target(df, horizon_months=config.FORWARD_HORIZON_MONTHS)
     df["segment"] = rule_based_segment(df)
     logger.info("Панель: %d строк, %d колонок", *df.shape)
 
