@@ -1,8 +1,8 @@
 """Полный пайплайн обучения: данные → EDA → features → модель → EWS → артефакты.
 
 Запуск:
-    python scripts/run_pipeline.py
-    python scripts/run_pipeline.py --data data/3_5.xlsx --last-slice --model-type lightgbm
+    .venv/bin/python scripts/run_pipeline.py
+    .venv/bin/python scripts/run_pipeline.py --data data/3_5.xlsx --last-slice --model-type lightgbm
 """
 from __future__ import annotations
 
@@ -117,9 +117,23 @@ def main() -> None:
                    .drop_duplicates(subset=["credit_id"], keep="last"))
     else:
         _last = df
-    sp = segment_profile(_last, "segment")
-    logger.info("\n%s", sp.to_string(index=False))
-    save_json(sp.to_dict(orient="records"), config.REPORTS_DIR / "segment_profile.json")
+    # Профиль сегментов для ВКР/дашборда — последний срез по договору (сумма = числу договоров)
+    sp_last = segment_profile(
+        _last, "segment", target_col=target_col, dedupe_credit_last_obs=True
+    )
+    logger.info("Сегменты (последний срез по credit_id):\n%s", sp_last.to_string(index=False))
+    save_json(
+        sp_last.to_dict(orient="records"),
+        config.REPORTS_DIR / "segment_profile.json",
+    )
+    # Дополнительно: профиль по всей панели (траектории) — для внутреннего анализа
+    sp_panel = segment_profile(
+        df, "segment", target_col=target_col, dedupe_credit_last_obs=False
+    )
+    save_json(
+        sp_panel.to_dict(orient="records"),
+        config.REPORTS_DIR / "segment_profile_panel.json",
+    )
 
     logger.info("=== Шаг 7. Обучение модели (%s, target=%s) ===", args.model_type, target_col)
     train_df = df

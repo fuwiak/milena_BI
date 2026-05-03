@@ -11,8 +11,10 @@
 После этого xlsx больше не нужен в рантайме дашборда — на Railway нужно закоммитить только
 ~5-20 МБ parquet вместо 107 МБ xlsx.
 
-Запуск:
-    python scripts/build_dashboard_cache.py
+Запуск (нужен ``lightgbm`` для распаковки ``model.pkl`` — используйте venv проекта):
+    .venv/bin/python scripts/build_dashboard_cache.py
+или:
+    ./scripts/with_venv.sh scripts/build_dashboard_cache.py
 """
 from __future__ import annotations
 
