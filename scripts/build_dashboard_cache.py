@@ -29,7 +29,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src import config  # noqa: E402
-from src.data_loader import load_and_prepare  # noqa: E402
+from src.data_loader import load_and_prepare, take_last_slice  # noqa: E402
 from src.eda import default_rate_over_time  # noqa: E402
 from src.ews import apply_rules, load_rules, zones_after_rules  # noqa: E402
 from src.feature_engineering import build_feature_set  # noqa: E402
@@ -64,6 +64,7 @@ PANEL_COLS: list[str] = [
     "days_since_last_payment",
     "default_target",
     "default_future",
+    "total_debt_reserve",
 ]
 
 SCORED_EXTRA: list[str] = [
@@ -109,9 +110,7 @@ def main() -> None:
 
     logger.info("=== 2. Последний срез ===")
     if "report_date_as_of" in df.columns:
-        last = (df.sort_values("report_date_as_of")
-                  .drop_duplicates(subset=["credit_id"], keep="last")
-                  .reset_index(drop=True))
+        last = take_last_slice(df).reset_index(drop=True)
     else:
         last = df.copy()
     logger.info("Срез на последнюю дату: %d договоров", len(last))

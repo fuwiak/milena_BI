@@ -74,11 +74,11 @@ def load_scored() -> pd.DataFrame:
     from src.model import predict_proba
     from src.recommendations import recommend_for_client
 
+    from src.data_loader import take_last_slice
+
     df_full = load_panel()
     if "report_date_as_of" in df_full.columns:
-        df_last = (df_full.sort_values("report_date_as_of")
-                          .drop_duplicates(subset=["credit_id"], keep="last")
-                          .reset_index(drop=True))
+        df_last = take_last_slice(df_full).reset_index(drop=True)
     else:
         df_last = df_full.copy()
 

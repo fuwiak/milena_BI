@@ -16,7 +16,7 @@ if str(ROOT) not in sys.path:
 
 from src import config  # noqa: E402
 from src.correlation import information_value_ranking, select_key_indicators  # noqa: E402
-from src.data_loader import load_and_prepare  # noqa: E402
+from src.data_loader import load_and_prepare, take_last_slice  # noqa: E402
 from src.eda import generate_eda_report, portfolio_kpi  # noqa: E402
 from src.ews import build_ews, save_rules  # noqa: E402
 from src.feature_engineering import build_feature_set, get_feature_columns  # noqa: E402
@@ -113,8 +113,7 @@ def main() -> None:
     logger.info("=== Шаг 6. Сегментация (rule-based) ===")
     df["segment"] = rule_based_segment(df)
     if "report_date_as_of" in df.columns:
-        _last = (df.sort_values("report_date_as_of")
-                   .drop_duplicates(subset=["credit_id"], keep="last"))
+        _last = take_last_slice(df)
     else:
         _last = df
     # Профиль сегментов для ВКР/дашборда — последний срез по договору (сумма = числу договоров)
@@ -167,11 +166,7 @@ def main() -> None:
 
     logger.info("=== Шаг 8. EWS на текущем срезе ===")
     save_rules(config.EWS_RULES)
-    last_slice = (
-        df.sort_values("report_date_as_of").drop_duplicates(subset=["credit_id"], keep="last")
-        if "report_date_as_of" in df.columns
-        else df
-    )
+    last_slice = take_last_slice(df) if "report_date_as_of" in df.columns else df
     ews = build_ews(last_slice, trained)
     recs = build_recommendations_table(ews)
     recs.head(500).to_csv(config.REPORTS_DIR / "ews_top500.csv", index=False)

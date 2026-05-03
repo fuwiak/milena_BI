@@ -79,7 +79,7 @@ def segment_profile(
     ):
         before = len(df)
         work = (
-            df.sort_values(["report_date_as_of", "credit_id"], na_position="last")
+            df.sort_values(["credit_id", "report_date_as_of"], na_position="last")
             .drop_duplicates(subset=["credit_id"], keep="last")
         )
         logger.info(

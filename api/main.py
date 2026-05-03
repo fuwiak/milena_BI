@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from src import config
-from src.data_loader import load_and_prepare
+from src.data_loader import load_and_prepare, take_last_slice
 from src.eda import aggregate_by, default_rate_over_time, portfolio_kpi
 from src.ews import apply_rules, load_rules, zones_after_rules
 from src.feature_engineering import build_feature_set
@@ -69,8 +69,7 @@ def get_portfolio() -> pd.DataFrame:
 def get_last_slice() -> pd.DataFrame:
     df = get_portfolio()
     if "report_date_as_of" in df.columns:
-        df = df.sort_values("report_date_as_of")
-        df = df.drop_duplicates(subset=["credit_id"], keep="last")
+        return take_last_slice(df)
     return df
 
 
